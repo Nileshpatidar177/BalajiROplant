@@ -1,0 +1,93 @@
+:root {
+  --cyan: #00d4ff;
+  --cyan-light: #7eeeff;
+  --deep-blue: #0a1628;
+  --mid-blue: #0f2040;
+  --card-bg: #0d1f3c;
+  --white: #ffffff;
+  --gray: #8899aa;
+  --light-gray: #e8f0fe;
+  --whatsapp: #25D366;
+  --font-heading: 'Exo 2', sans-serif;
+  --font-body: 'Nunito', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--deep-blue);
+  color: var(--white);
+  overflow-x: hidden;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--deep-blue); }
+::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 3px; }
+
+/* Sticky Buttons */
+.sticky-buttons {
+  position: fixed;
+  right: 16px;
+  bottom: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 1000;
+}
+
+.sticky-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 50px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.sticky-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+}
+
+.call-btn {
+  background: linear-gradient(135deg, #00d4ff, #0077cc);
+  color: white;
+}
+
+.wa-btn {
+  background: var(--whatsapp);
+  color: white;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.4); }
+  50% { box-shadow: 0 0 0 15px rgba(0, 212, 255, 0); }
+}
