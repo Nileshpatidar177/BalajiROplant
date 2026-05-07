@@ -11,7 +11,8 @@ const defaultProducts = [
     retailPrice: 80,
     wholesalePrice: 65,
     unit: 'per block',
-    description: 'Badi barf ki silli - shaadi, hotel, restaurant ke liye. Weight approx 40kg.',
+    description:
+      'Badi barf ki silli - shaadi, hotel, restaurant ke liye. Weight approx 40kg.',
     emoji: '🧊',
     available: true,
   },
@@ -22,7 +23,8 @@ const defaultProducts = [
     retailPrice: 45,
     wholesalePrice: 35,
     unit: 'per block',
-    description: 'Choti barf ki silli - ghar aur dukaan ke liye. Weight approx 20kg.',
+    description:
+      'Choti barf ki silli - ghar aur dukaan ke liye. Weight approx 20kg.',
     emoji: '🧊',
     available: true,
   },
@@ -33,7 +35,8 @@ const defaultProducts = [
     retailPrice: 25,
     wholesalePrice: 20,
     unit: 'per can',
-    description: 'Saaf filtered RO paani - ghar aur office ke liye. 20 liter can.',
+    description:
+      'Saaf filtered RO paani - ghar aur office ke liye. 20 liter can.',
     emoji: '💧',
     available: true,
   },
@@ -44,7 +47,8 @@ const defaultProducts = [
     retailPrice: 200,
     wholesalePrice: 160,
     unit: 'per tank',
-    description: 'Bade tank ki delivery - building, factory aur bulk order ke liye.',
+    description:
+      'Bade tank ki delivery - building, factory aur bulk order ke liye.',
     emoji: '🚰',
     available: true,
   },
@@ -55,7 +59,8 @@ const defaultProducts = [
     retailPrice: 150,
     wholesalePrice: 120,
     unit: 'per box',
-    description: 'Taza swadisht ice cream - ghar par party ke liye perfect.',
+    description:
+      'Taza swadisht ice cream - ghar par party ke liye perfect.',
     emoji: '🍦',
     available: true,
   },
@@ -66,21 +71,42 @@ const Products = () => {
   const [filter, setFilter] = useState('all');
   const [showWholesale, setShowWholesale] = useState(false);
 
- useEffect(() => {
-  axios.get('/api/products')
-    .then((res) => {
-      console.log(res.data);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await axios.get('/api/products');
 
-      if (Array.isArray(res.data)) {
-        setProducts(res.data);
-      } else if (Array.isArray(res.data.products)) {
-        setProducts(res.data.products);
+        console.log('API RESPONSE:', res.data);
+
+        // Different possible response formats handle kar rahe hain
+        let productData = [];
+
+        if (Array.isArray(res.data)) {
+          productData = res.data;
+
+        } else if (Array.isArray(res.data.products)) {
+          productData = res.data.products;
+
+        } else if (Array.isArray(res.data.data)) {
+          productData = res.data.data;
+
+        } else {
+          console.log('Products array nahi mila, default data use hoga');
+          productData = defaultProducts;
+        }
+
+        setProducts(productData);
+
+      } catch (error) {
+        console.log('API Error:', error);
+
+        // Error hone par default products show honge
+        setProducts(defaultProducts);
       }
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-}, []);
+    };
+
+    fetchProducts();
+  }, []);
 
   const categories = [
     { id: 'all', label: '🌟 Sab Products' },
@@ -89,47 +115,95 @@ const Products = () => {
     { id: 'icecream', label: '🍦 Ice Cream' },
   ];
 
-  const filtered = filter === 'all' ? products : products.filter(p => p.category === filter);
+  // Safe filtering
+  const filtered = Array.isArray(products)
+    ? filter === 'all'
+      ? products
+      : products.filter((p) => p.category === filter)
+    : [];
 
   const orderProduct = (p) => {
     const phone = '919999999999';
-    const price = showWholesale ? p.wholesalePrice : p.retailPrice;
+
+    const price = showWholesale
+      ? p.wholesalePrice
+      : p.retailPrice;
+
     const msg = encodeURIComponent(
-      `🛒 *ORDER REQUEST*\n\nProduct: ${p.name}\nPrice: ₹${price} ${p.unit}\n\nMujhe ye product chahiye. Please confirm karein.\n\n_Patidar Ice & RO Services_`
+      `🛒 *ORDER REQUEST*
+
+Product: ${p.name}
+Price: ₹${price} ${p.unit}
+
+Mujhe ye product chahiye. Please confirm karein.
+
+_Patidar Ice & RO Services_`
     );
-    window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+
+    window.open(
+      `https://wa.me/${phone}?text=${msg}`,
+      '_blank'
+    );
   };
 
   return (
     <div className="products-page">
+
+      {/* HEADER */}
       <div className="products-header">
         <div className="products-header-inner">
-          <h1 className="products-title">Hamare Products</h1>
-          <p className="products-sub">Fresh quality - direct factory se aapke paas</p>
 
+          <h1 className="products-title">
+            Hamare Products
+          </h1>
+
+          <p className="products-sub">
+            Fresh quality - direct factory se aapke paas
+          </p>
+
+          {/* PRICE TOGGLE */}
           <div className="price-toggle">
-            <span className={!showWholesale ? 'active' : ''} onClick={() => setShowWholesale(false)}>
+
+            <span
+              className={!showWholesale ? 'active' : ''}
+              onClick={() => setShowWholesale(false)}
+            >
               👤 Retail Price
             </span>
+
             <div
-              className={`toggle-switch ${showWholesale ? 'on' : ''}`}
-              onClick={() => setShowWholesale(!showWholesale)}
+              className={`toggle-switch ${
+                showWholesale ? 'on' : ''
+              }`}
+              onClick={() =>
+                setShowWholesale(!showWholesale)
+              }
             >
               <div className="toggle-knob"></div>
             </div>
-            <span className={showWholesale ? 'active' : ''} onClick={() => setShowWholesale(true)}>
+
+            <span
+              className={showWholesale ? 'active' : ''}
+              onClick={() => setShowWholesale(true)}
+            >
               🏪 Wholesale Price
             </span>
+
           </div>
         </div>
       </div>
 
+      {/* BODY */}
       <div className="products-body">
+
+        {/* FILTERS */}
         <div className="filter-tabs">
-          {categories.map(cat => (
+          {categories.map((cat) => (
             <button
               key={cat.id}
-              className={`filter-tab ${filter === cat.id ? 'active' : ''}`}
+              className={`filter-tab ${
+                filter === cat.id ? 'active' : ''
+              }`}
               onClick={() => setFilter(cat.id)}
             >
               {cat.label}
@@ -137,34 +211,73 @@ const Products = () => {
           ))}
         </div>
 
+        {/* PRODUCTS GRID */}
         <div className="products-grid">
-          {filtered.map(p => (
-            <div key={p._id} className={`product-card ${!p.available ? 'unavailable' : ''}`}>
-              <div className="product-emoji">{p.emoji}</div>
-              <h3 className="product-name">{p.name}</h3>
-              <p className="product-desc">{p.description}</p>
-              <div className="product-price">
-                <span className="price-amount">
-                  ₹{showWholesale ? p.wholesalePrice : p.retailPrice}
-                </span>
-                <span className="price-unit">{p.unit}</span>
+
+          {filtered.length > 0 ? (
+            filtered.map((p) => (
+              <div
+                key={p._id}
+                className={`product-card ${
+                  !p.available ? 'unavailable' : ''
+                }`}
+              >
+                <div className="product-emoji">
+                  {p.emoji}
+                </div>
+
+                <h3 className="product-name">
+                  {p.name}
+                </h3>
+
+                <p className="product-desc">
+                  {p.description}
+                </p>
+
+                <div className="product-price">
+                  <span className="price-amount">
+                    ₹
+                    {showWholesale
+                      ? p.wholesalePrice
+                      : p.retailPrice}
+                  </span>
+
+                  <span className="price-unit">
+                    {p.unit}
+                  </span>
+                </div>
+
+                {p.available ? (
+                  <button
+                    className="order-product-btn"
+                    onClick={() => orderProduct(p)}
+                  >
+                    💬 WhatsApp Order
+                  </button>
+                ) : (
+                  <div className="unavailable-tag">
+                    Abhi Available Nahi
+                  </div>
+                )}
               </div>
-              {p.available ? (
-                <button className="order-product-btn" onClick={() => orderProduct(p)}>
-                  💬 WhatsApp Order
-                </button>
-              ) : (
-                <div className="unavailable-tag">Abhi Available Nahi</div>
-              )}
+            ))
+          ) : (
+            <div className="no-products">
+              Koi products available nahi hai.
             </div>
-          ))}
+          )}
+
         </div>
 
+        {/* WHOLESALE NOTE */}
         {showWholesale && (
           <div className="wholesale-note">
-            ⚠️ Wholesale price sirf dealers aur bulk orders ke liye hai. Minimum order quantity laagoo hoti hai.
+            ⚠️ Wholesale price sirf dealers aur
+            bulk orders ke liye hai.
+            Minimum order quantity laagoo hoti hai.
           </div>
         )}
+
       </div>
 
       <Footer />
