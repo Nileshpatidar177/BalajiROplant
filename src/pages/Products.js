@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Footer from '../components/Footer';
@@ -67,21 +69,30 @@ const Products = () => {
   const [filter, setFilter] = useState('all');
   const [showWholesale, setShowWholesale] = useState(false);
 
-useEffect(() => {
-  axios.get('/api/products')
-    .then((res) => {
-      console.log(res.data);
+  useEffect(() => {
+    axios
+      .get('/api/products')
+      .then((res) => {
+        console.log('API DATA:', res.data);
 
-      if (Array.isArray(res.data)) {
-        setProducts(res.data);
-      } else if (Array.isArray(res.data.products)) {
-        setProducts(res.data.products);
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-}, []);
+        // Agar direct array aaye
+        if (Array.isArray(res.data)) {
+          setProducts(res.data);
+        }
+        // Agar object ke andar products array aaye
+        else if (Array.isArray(res.data.products)) {
+          setProducts(res.data.products);
+        }
+        // Agar kuch galat aaye to default products use karo
+        else {
+          setProducts(defaultProducts);
+        }
+      })
+      .catch((err) => {
+        console.log('API Error:', err);
+        setProducts(defaultProducts);
+      });
+  }, []);
 
   const categories = [
     { id: 'all', label: '🌟 Sab Products' },
@@ -90,20 +101,29 @@ useEffect(() => {
     { id: 'icecream', label: '🍦 Ice Cream' },
   ];
 
+  // Safety check
+  const safeProducts = Array.isArray(products) ? products : [];
+
   const filtered =
-  filter === 'all'
-    ? (Array.isArray(products) ? products : [])
-    : (Array.isArray(products)
-        ? products.filter(p => p.category === filter)
-        : []);
+    filter === 'all'
+      ? safeProducts
+      : safeProducts.filter((p) => p.category === filter);
 
   const orderProduct = (p) => {
     const phone = '919999999999';
-    const price = showWholesale ? p.wholesalePrice : p.retailPrice;
+
+    const price = showWholesale
+      ? p.wholesalePrice
+      : p.retailPrice;
+
     const msg = encodeURIComponent(
-      `🛒 *ORDER REQUEST*\n\nProduct: ${p.name}\nPrice: ₹${price} ${p.unit}\n\nMujhe ye product chahiye. Please confirm karein.\n\n_Patidar Ice & RO Services_`
+      `🛒 ORDER REQUEST\n\nProduct: ${p.name}\nPrice: ₹${price} ${p.unit}\n\nMujhe ye product chahiye. Please confirm karein.\n\nPatidar Ice & RO Services`
     );
-    window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+
+    window.open(
+      `https://wa.me/${phone}?text=${msg}`,
+      '_blank'
+    );
   };
 
   return (
@@ -111,19 +131,30 @@ useEffect(() => {
       <div className="products-header">
         <div className="products-header-inner">
           <h1 className="products-title">Hamare Products</h1>
-          <p className="products-sub">Fresh quality - direct factory se aapke paas</p>
+
+          <p className="products-sub">
+            Fresh quality - direct factory se aapke paas
+          </p>
 
           <div className="price-toggle">
-            <span className={!showWholesale ? 'active' : ''} onClick={() => setShowWholesale(false)}>
+            <span
+              className={!showWholesale ? 'active' : ''}
+              onClick={() => setShowWholesale(false)}
+            >
               👤 Retail Price
             </span>
+
             <div
               className={`toggle-switch ${showWholesale ? 'on' : ''}`}
               onClick={() => setShowWholesale(!showWholesale)}
             >
               <div className="toggle-knob"></div>
             </div>
-            <span className={showWholesale ? 'active' : ''} onClick={() => setShowWholesale(true)}>
+
+            <span
+              className={showWholesale ? 'active' : ''}
+              onClick={() => setShowWholesale(true)}
+            >
               🏪 Wholesale Price
             </span>
           </div>
@@ -132,10 +163,12 @@ useEffect(() => {
 
       <div className="products-body">
         <div className="filter-tabs">
-          {categories.map(cat => (
+          {categories.map((cat) => (
             <button
               key={cat.id}
-              className={`filter-tab ${filter === cat.id ? 'active' : ''}`}
+              className={`filter-tab ${
+                filter === cat.id ? 'active' : ''
+              }`}
               onClick={() => setFilter(cat.id)}
             >
               {cat.label}
@@ -144,31 +177,55 @@ useEffect(() => {
         </div>
 
         <div className="products-grid">
-          {filtered.map(p => (
-            <div key={p._id} className={`product-card ${!p.available ? 'unavailable' : ''}`}>
-              <div className="product-emoji">{p.emoji}</div>
-              <h3 className="product-name">{p.name}</h3>
-              <p className="product-desc">{p.description}</p>
-              <div className="product-price">
-                <span className="price-amount">
-                  ₹{showWholesale ? p.wholesalePrice : p.retailPrice}
-                </span>
-                <span className="price-unit">{p.unit}</span>
+          {filtered.length > 0 ? (
+            filtered.map((p) => (
+              <div
+                key={p._id}
+                className={`product-card ${
+                  !p.available ? 'unavailable' : ''
+                }`}
+              >
+                <div className="product-emoji">{p.emoji}</div>
+
+                <h3 className="product-name">{p.name}</h3>
+
+                <p className="product-desc">{p.description}</p>
+
+                <div className="product-price">
+                  <span className="price-amount">
+                    ₹{showWholesale
+                      ? p.wholesalePrice
+                      : p.retailPrice}
+                  </span>
+
+                  <span className="price-unit">
+                    {p.unit}
+                  </span>
+                </div>
+
+                {p.available ? (
+                  <button
+                    className="order-product-btn"
+                    onClick={() => orderProduct(p)}
+                  >
+                    💬 WhatsApp Order
+                  </button>
+                ) : (
+                  <div className="unavailable-tag">
+                    Abhi Available Nahi
+                  </div>
+                )}
               </div>
-              {p.available ? (
-                <button className="order-product-btn" onClick={() => orderProduct(p)}>
-                  💬 WhatsApp Order
-                </button>
-              ) : (
-                <div className="unavailable-tag">Abhi Available Nahi</div>
-              )}
-            </div>
-          ))}
+            ))
+          ) : (
+            <p>No products found.</p>
+          )}
         </div>
 
         {showWholesale && (
           <div className="wholesale-note">
-            ⚠️ Wholesale price sirf dealers aur bulk orders ke liye hai. Minimum order quantity laagoo hoti hai.
+            ⚠️ Wholesale price sirf dealers aur bulk orders ke liye hai.
+            Minimum order quantity laagoo hoti hai.
           </div>
         )}
       </div>
